@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
+import invariant from "tiny-invariant";
 
 import { createPost } from "~/models/post.server";
 
@@ -24,6 +25,20 @@ export const action = async ({
   if (hasErrors) {
     return json(errors);
   }
+
+  invariant(
+    typeof title === "string",
+    "title must be a string"
+  );
+  invariant(
+    typeof slug === "string",
+    "title must be a string"
+  );
+  invariant(
+    typeof markdown === "string",
+    "title must be a string"
+  );
+
   await createPost({ title, slug, markdown})
 
   return redirect("/posts/admin");
