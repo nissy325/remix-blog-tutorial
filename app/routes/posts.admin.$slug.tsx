@@ -1,28 +1,27 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Form, useActionData, useNavigation } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
-import { getPost, updatePost } from "~/models/post.server";
+import {
+  useLoaderData,
+  Form,
+  useActionData,
+  useNavigation,
+} from "@remix-run/react";
 import invariant from "tiny-invariant";
 
-export const loader = async({
-  params
-}: LoaderFunctionArgs) => {
+import { getPost, updatePost } from "~/models/post.server";
+
+export const loader = async ({ params }: LoaderFunctionArgs) => {
   invariant(params.slug, "No slug provided");
 
   const post = await getPost(params.slug);
   invariant(post, `Post not found: ${params.slug}`);
 
   return json({ post });
-}
+};
 
-export const action = async ({
-  request, params
-}: ActionFunctionArgs) => {
+export const action = async ({ request, params }: ActionFunctionArgs) => {
   const targetPostSlug = params.slug;
-  invariant(
-    typeof targetPostSlug === "string",
-    "slug must be a string"
-  );
+  invariant(typeof targetPostSlug === "string", "slug must be a string");
 
   const formData = await request.formData();
 
@@ -33,37 +32,28 @@ export const action = async ({
     title: title ? null : "title is required",
     markdown: markdown ? null : "markdown is required",
   };
-  const hasErrors = Object.values(errors).some(
-    (errorMessage) => errorMessage
-  );
+  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
   if (hasErrors) {
     return json(errors);
   }
 
-  invariant(
-    typeof title === "string",
-    "title must be a string"
-  );
-  invariant(
-    typeof markdown === "string",
-    "title must be a string"
-  );
+  invariant(typeof title === "string", "title must be a string");
+  invariant(typeof markdown === "string", "title must be a string");
 
   // TODO: remove me
   await new Promise((res) => setTimeout(res, 5000));
-  await updatePost(targetPostSlug, { title, markdown})
+  await updatePost(targetPostSlug, { title, markdown });
 
   return redirect("/posts/admin");
-}
+};
 
-const inputClassName = "w-full rounded border border-gray-500 px-2 py-1 text-lg"
+const inputClassName =
+  "w-full rounded border border-gray-500 px-2 py-1 text-lg";
 
 export default function PostAdminSlug() {
   const errors = useActionData<typeof action>();
   const navigation = useNavigation();
-  const isUpdating = Boolean(
-    navigation.state === 'submitting'
-  )
+  const isUpdating = Boolean(navigation.state === "submitting");
 
   const { post } = useLoaderData<typeof loader>();
 
@@ -87,10 +77,8 @@ export default function PostAdminSlug() {
         <label htmlFor="markdown">
           Markdown:
           {errors?.markdown ? (
-            <em className="text-red-600">
-              {errors.markdown}
-            </em>
-          ) : null }
+            <em className="text-red-600">{errors.markdown}</em>
+          ) : null}
         </label>
         <br />
         <textarea
