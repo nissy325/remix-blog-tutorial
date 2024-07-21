@@ -1,13 +1,11 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import invariant from "tiny-invariant";
 
 import { createPost } from "~/models/post.server";
 
-export const action = async ({
-  request,
-}: ActionFunctionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
 
   const title = formData.get("title");
@@ -19,41 +17,39 @@ export const action = async ({
     slug: slug ? null : "slug is required",
     markdown: markdown ? null : "markdown is required",
   };
-  const hasErrors = Object.values(errors).some(
-    (errorMessage) => errorMessage
-  );
+  const hasErrors = Object.values(errors).some((errorMessage) => errorMessage);
   if (hasErrors) {
     return json(errors);
   }
 
-  invariant(
-    typeof title === "string",
-    "title must be a string"
-  );
-  invariant(
-    typeof slug === "string",
-    "title must be a string"
-  );
-  invariant(
-    typeof markdown === "string",
-    "title must be a string"
-  );
+  invariant(typeof title === "string", "title must be a string");
+  invariant(typeof slug === "string", "title must be a string");
+  invariant(typeof markdown === "string", "title must be a string");
 
   // TODO: remove me
   await new Promise((res) => setTimeout(res, 5000));
-  await createPost({ title, slug, markdown})
+  await createPost({ title, slug, markdown });
 
   return redirect("/posts/admin");
-}
+};
 
-const inputClassName = "w-full rounded border border-gray-500 px-2 py-1 text-lg"
+const inputClassName =
+  "w-full rounded border border-gray-500 px-2 py-1 text-lg";
 
 export default function NewPost() {
   const errors = useActionData<typeof action>();
   const navigation = useNavigation();
-  const isCreating = Boolean(
-    navigation.state === 'submitting'
-  )
+  const isCreating = Boolean(navigation.state === "submitting");
+
+  if (isCreating) {
+    return (
+      <p>
+        <Link to="new" className="text-blue-600 underline">
+          Create a new post
+        </Link>
+      </p>
+    );
+  }
 
   return (
     <Form method="post">
@@ -63,11 +59,7 @@ export default function NewPost() {
           {errors?.title ? (
             <em className="text-red-600">{errors.title}</em>
           ) : null}
-          <input
-            type="text"
-            name="title"
-            className={inputClassName}
-          />
+          <input type="text" name="title" className={inputClassName} />
         </label>
       </p>
       <p>
@@ -76,21 +68,15 @@ export default function NewPost() {
           {errors?.slug ? (
             <em className="text-red-600">{errors.slug}</em>
           ) : null}
-          <input
-            type="text"
-            name="slug"
-            className={inputClassName}
-          />
+          <input type="text" name="slug" className={inputClassName} />
         </label>
       </p>
       <p>
         <label htmlFor="markdown">
           Markdown:
           {errors?.markdown ? (
-            <em className="text-red-600">
-              {errors.markdown}
-            </em>
-          ) : null }
+            <em className="text-red-600">{errors.markdown}</em>
+          ) : null}
         </label>
         <br />
         <textarea
